@@ -78,24 +78,25 @@ void tcp_delay_timer_callback( unsigned long data )
                 node->ipsrc, htons(node->portsrc),
                 0);
 
-        /* If the connnection dont exists return */
-        if (!sk) {
-        	printk(KERN_INFO "tcp_delay: connection (%s) not found\n", node->key);
-                return;
-        }
+	/* The connection still exists on the kernel */
+	if (sk) {
+        	lock_sock(sk);
 
-	lock_sock(sk);
+        	sk->sk_userlocks |= SOCK_SNDBUF_LOCK;
+        	sk->sk_sndbuf = node->sk_sndbuf;
+        	sk->sk_write_space(sk);
 
-	sk->sk_userlocks |= SOCK_SNDBUF_LOCK;
-	sk->sk_sndbuf = node->sk_sndbuf;
-	sk->sk_write_space(sk);
+        	release_sock(sk);
 
-	release_sock(sk);
+        	printk(KERN_INFO "tcp_delay: timer expires on connection (%s)\n", node->key);
 
-	printk(KERN_INFO "tcp_delay: timer expires on connection (%s)\n", node->key);
+        	ret = del_timer( &node->timer );
+        	if (ret) printk(KERN_INFO "tcp_delay: The timer is still in use for connection (%s)\n", node->key);
 
-	ret = del_timer( &node->timer );
-	if (ret) printk(KERN_INFO "tcp_delay: The timer is still in use for connection (%s)\n", node->key);	
+	} else {
+		/* The connection dont exists on the kernel, long timeout or rst/fin */
+        	printk(KERN_INFO "tcp_delay: timer expires but connection (%s) not found\n", node->key);
+	}
 
 	hash_del_rcu(&node->hash_node);
 	kfree(node);
