@@ -1,7 +1,7 @@
 tcp_delay kernel module
 =======================
 
-TCP delay is a kernel module that enables from user space delay tcp connections from a period of time.
+TCP delay is a kernel module that enables from user space delay tcp connections from a period of time. Is usefull when the process that handles network connections is slow, due to congestion, ddos attacks or whatever and you can not modify the code of the process. Just copy/paste from the output of netstat and go.
 
 Using tcp_delay 
 ---------------
@@ -27,4 +27,3 @@ Contributing to tcp_delay
 -------------------------
 
 The module has been tested over kernels 4.x
-
