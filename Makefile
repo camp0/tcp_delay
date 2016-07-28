@@ -1,3 +1,4 @@
+CFLAGS_tcp_delay.o := -DDEBUG
 obj-m += tcp_delay.o
 
 all:
